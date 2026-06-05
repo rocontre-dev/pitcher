@@ -1,9 +1,11 @@
 import { useState, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
 import { usePitchProcessor } from './hooks/usePitchProcessor';
+import { useBpmDetector } from './hooks/useBpmDetector';
 import { useAudioStore } from './store/audioStore';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { WaveformViewer } from './components/WaveformViewer/WaveformViewer';
+import { AudioAnalysisPanel } from './components/AudioAnalysisPanel/AudioAnalysisPanel';
 import { AudioControls } from './components/AudioControls/AudioControls';
 import { PitchControl } from './components/PitchControl/PitchControl';
 import { SpeedControl } from './components/SpeedControl/SpeedControl';
@@ -16,6 +18,9 @@ function App() {
 
   // Initialize pitch processor hook
   usePitchProcessor();
+  
+  // Initialize BPM detector hook
+  useBpmDetector();
 
   const handleWaveSurferReady = useCallback((ws: WaveSurfer) => {
     setWavesurfer(ws);
@@ -61,6 +66,11 @@ function App() {
             <WaveformViewer onWaveSurferReady={handleWaveSurferReady} />
           </section>
 
+          {/* Audio Analysis Panel */}
+          <section className="section analysis-section">
+            <AudioAnalysisPanel />
+          </section>
+
           {/* Controls Grid */}
           <div className="controls-grid">
             {/* Pitch Control */}
@@ -87,7 +97,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 4 - Accurate Offline Export</p>
+        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 5 - BPM Detection</p>
       </footer>
     </div>
   );

@@ -10,6 +10,10 @@ interface AudioState {
   processingError: string | null;
   isExporting: boolean;
   exportProgress: string;
+  bpm: number | null;
+  isDetectingBpm: boolean;
+  bpmError: string | null;
+  key: string | null;
 
   setAudioFile: (file: File) => void;
   setPitch: (value: number) => void;
@@ -20,6 +24,10 @@ interface AudioState {
   setProcessingError: (message: string | null) => void;
   setIsExporting: (value: boolean) => void;
   setExportProgress: (message: string) => void;
+  setBpm: (value: number | null) => void;
+  setIsDetectingBpm: (value: boolean) => void;
+  setBpmError: (message: string | null) => void;
+  setKey: (value: string | null) => void;
   reset: () => void;
 }
 
@@ -33,6 +41,10 @@ const initialState = {
   processingError: null,
   isExporting: false,
   exportProgress: '',
+  bpm: null,
+  isDetectingBpm: false,
+  bpmError: null,
+  key: null,
 };
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -46,6 +58,10 @@ export const useAudioStore = create<AudioState>((set) => ({
   processingError: null,
   isExporting: false,
   exportProgress: '',
+  bpm: null,
+  isDetectingBpm: false,
+  bpmError: null,
+  key: null,
 
   // Actions
   setAudioFile: (file: File) => {
@@ -61,6 +77,10 @@ export const useAudioStore = create<AudioState>((set) => ({
       pitch: 0,
       speed: 1,
       processingError: null,
+      bpm: null,
+      isDetectingBpm: false,
+      bpmError: null,
+      key: null,
     });
   },
 
@@ -103,6 +123,22 @@ export const useAudioStore = create<AudioState>((set) => ({
 
   setExportProgress: (message: string) => {
     set({ exportProgress: message });
+  },
+
+  setBpm: (value: number | null) => {
+    set({ bpm: value });
+  },
+
+  setIsDetectingBpm: (value: boolean) => {
+    set({ isDetectingBpm: value });
+  },
+
+  setBpmError: (message: string | null) => {
+    set({ bpmError: message });
+  },
+
+  setKey: (value: string | null) => {
+    set({ key: value });
   },
 
   reset: () => {
