@@ -4,10 +4,16 @@ interface AudioState {
   audioFile: File | null;
   pitch: number;
   speed: number;
+  processedAudioUrl: string | null;
+  isProcessing: boolean;
+  processingError: string | null;
 
   setAudioFile: (file: File) => void;
   setPitch: (value: number) => void;
   setSpeed: (value: number) => void;
+  setProcessedAudioUrl: (url: string | null) => void;
+  setIsProcessing: (value: boolean) => void;
+  setProcessingError: (message: string | null) => void;
   reset: () => void;
 }
 
@@ -15,6 +21,9 @@ const initialState = {
   audioFile: null,
   pitch: 0,
   speed: 1,
+  processedAudioUrl: null,
+  isProcessing: false,
+  processingError: null,
 };
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -22,10 +31,24 @@ export const useAudioStore = create<AudioState>((set) => ({
   audioFile: null,
   pitch: 0,
   speed: 1,
+  processedAudioUrl: null,
+  isProcessing: false,
+  processingError: null,
 
   // Actions
   setAudioFile: (file: File) => {
-    set({ audioFile: file });
+    // Clear previous processed audio and reset state
+    const state = useAudioStore.getState();
+    if (state.processedAudioUrl) {
+      URL.revokeObjectURL(state.processedAudioUrl);
+    }
+    set({
+      audioFile: file,
+      processedAudioUrl: null,
+      pitch: 0,
+      speed: 1,
+      processingError: null,
+    });
   },
 
   setPitch: (value: number) => {
@@ -40,7 +63,28 @@ export const useAudioStore = create<AudioState>((set) => ({
     set({ speed: clampedValue });
   },
 
+  setProcessedAudioUrl: (url: string | null) => {
+    // Revoke old URL if exists
+    const state = useAudioStore.getState();
+    if (state.processedAudioUrl) {
+      URL.revokeObjectURL(state.processedAudioUrl);
+    }
+    set({ processedAudioUrl: url });
+  },
+
+  setIsProcessing: (value: boolean) => {
+    set({ isProcessing: value });
+  },
+
+  setProcessingError: (message: string | null) => {
+    set({ processingError: message });
+  },
+
   reset: () => {
+    const state = useAudioStore.getState();
+    if (state.processedAudioUrl) {
+      URL.revokeObjectURL(state.processedAudioUrl);
+    }
     set(initialState);
   },
 }));

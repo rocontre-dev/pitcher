@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import { usePitchProcessor } from './hooks/usePitchProcessor';
+import { useAudioStore } from './store/audioStore';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
 import { WaveformViewer } from './components/WaveformViewer/WaveformViewer';
 import { AudioControls } from './components/AudioControls/AudioControls';
@@ -9,6 +11,10 @@ import './App.css';
 
 function App() {
   const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
+  const processingError = useAudioStore((state) => state.processingError);
+
+  // Initialize pitch processor hook
+  usePitchProcessor();
 
   const handleWaveSurferReady = useCallback((ws: WaveSurfer) => {
     setWavesurfer(ws);
@@ -32,6 +38,18 @@ function App() {
 
       <main className="app-main">
         <div className="container">
+          {/* Processing Error */}
+          {processingError && (
+            <div className="error-banner">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>{processingError}</span>
+            </div>
+          )}
+
           {/* Audio Uploader */}
           <section className="section uploader-section">
             <AudioUploader />
@@ -63,7 +81,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 1 MVP</p>
+        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 2 - Real Pitch Shifting</p>
       </footer>
     </div>
   );

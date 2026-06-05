@@ -4,6 +4,20 @@
   flex-direction: column;
 }
 
+/* Error Banner */
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: rgba(255, 82, 82, 0.1);
+  border: 1px solid rgba(255, 82, 82, 0.3);
+  border-radius: var(--radius-md);
+  color: #ff5252;
+  font-size: 0.875rem;
+  margin-bottom: var(--spacing-md);
+}
+
 /* Header */
 .app-header {
   background-color: var(--bg-card);

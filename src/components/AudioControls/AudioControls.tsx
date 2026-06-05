@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import WaveSurfer from 'wavesurfer.js';
+import { useAudioStore } from '../../store/audioStore';
 import './AudioControls.css';
 
 interface AudioControlsProps {
@@ -10,6 +11,7 @@ type PlaybackState = 'stopped' | 'playing' | 'paused';
 
 export function AudioControls({ wavesurfer }: AudioControlsProps) {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('stopped');
+  const isProcessing = useAudioStore((state) => state.isProcessing);
 
   const handlePlay = useCallback(() => {
     if (wavesurfer) {
@@ -66,9 +68,9 @@ export function AudioControls({ wavesurfer }: AudioControlsProps) {
         <button
           className="btn btn-icon control-btn"
           onClick={handlePlay}
-          disabled={!wavesurfer || isPlaying}
+          disabled={!wavesurfer || isPlaying || isProcessing}
           aria-label="Play"
-          title="Play"
+          title={isProcessing ? 'Processing audio...' : 'Play'}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
             <polygon points="5,3 19,12 5,21" />

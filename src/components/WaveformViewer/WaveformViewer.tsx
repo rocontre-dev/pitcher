@@ -10,12 +10,17 @@ interface WaveformViewerProps {
 export function WaveformViewer({ onWaveSurferReady }: WaveformViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const originalAudioUrlRef = useRef<string | null>(null);
+  const processedAudioUrlRef = useRef<string | null>(null);
+
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isReady, setIsReady] = useState(false);
 
   const audioFile = useAudioStore((state) => state.audioFile);
   const speed = useAudioStore((state) => state.speed);
+  const processedAudioUrl = useAudioStore((state) => state.processedAudioUrl);
+  const isProcessing = useAudioStore((state) => state.isProcessing);
 
   // Format time as MM:SS
   const formatTime = useCallback((seconds: number): string => {
@@ -74,17 +79,54 @@ export function WaveformViewer({ onWaveSurferReady }: WaveformViewerProps) {
     };
   }, [onWaveSurferReady]);
 
-  // Load new audio file
+  // Load audio (original or processed)
   useEffect(() => {
-    if (!audioFile || !wavesurferRef.current) return;
+    if (!wavesurferRef.current) return;
 
-    const objectUrl = URL.createObjectURL(audioFile);
-    wavesurferRef.current.load(objectUrl);
+    const ws = wavesurferRef.current;
+
+    // Revoke old URLs safely
+    if (originalAudioUrlRef.current) {
+      URL.revokeObjectURL(originalAudioUrlRef.current);
+      originalAudioUrlRef.current = null;
+    }
+
+    // Determine which audio source to use
+    let audioUrl: string;
+
+    if (processedAudioUrl) {
+      // Use processed audio
+      audioUrl = processedAudioUrl;
+      processedAudioUrlRef.current = processedAudioUrl;
+    } else if (audioFile) {
+      // Use original audio file
+      audioUrl = URL.createObjectURL(audioFile);
+      originalAudioUrlRef.current = audioUrl;
+    } else {
+      // No audio to load
+      return;
+    }
+
+    setIsReady(false);
+    setCurrentTime(0);
+    setDuration(0);
+
+    ws.load(audioUrl);
 
     return () => {
-      URL.revokeObjectURL(objectUrl);
+      // Don't revoke here - we manage URLs separately
     };
-  }, [audioFile]);
+  }, [audioFile, processedAudioUrl]);
+
+  // Cleanup URLs when processed audio changes
+  useEffect(() => {
+    return () => {
+      if (originalAudioUrlRef.current) {
+        URL.revokeObjectURL(originalAudioUrlRef.current);
+      }
+      // Don't revoke processedAudioUrl here - it's managed by the store
+    };
+  }, []);
 
   // Update playback speed
   useEffect(() => {
@@ -107,12 +149,15 @@ export function WaveformViewer({ onWaveSurferReady }: WaveformViewerProps) {
     <div className="waveform-viewer">
       <div className="waveform-header">
         <span className="time-current">{formatTime(currentTime)}</span>
-        <div className="waveform-title">Waveform</div>
+        <div className="waveform-title">
+          Waveform
+          {isProcessing && <span className="processing-indicator">Processing...</span>}
+        </div>
         <span className="time-total">{formatTime(duration)}</span>
       </div>
 
       <div className="waveform-container">
-        {!audioFile && (
+        {!audioFile && !isProcessing && (
           <div className="waveform-placeholder">
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
@@ -121,6 +166,12 @@ export function WaveformViewer({ onWaveSurferReady }: WaveformViewerProps) {
               <line x1="8" y1="23" x2="16" y2="23" />
             </svg>
             <p>Load an audio file to see the waveform</p>
+          </div>
+        )}
+        {isProcessing && (
+          <div className="waveform-processing">
+            <div className="processing-spinner" />
+            <p>Processing pitch shift...</p>
           </div>
         )}
         <div ref={containerRef} className="waveform-wave" />
