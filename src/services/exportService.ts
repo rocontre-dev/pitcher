@@ -4,8 +4,11 @@
  * Responsible for:
  * - Generating export filenames based on pitch and speed
  * - Triggering browser downloads
+ * - Using offline rendering for accurate export
  * - Providing a future-proof abstraction for audio export
  */
+
+import { renderAudioForExport, type RenderProgress } from './offlineRenderService';
 
 export interface ExportableAudio {
   blob: Blob;
@@ -88,67 +91,46 @@ export function downloadAudioBlob(blob: Blob, filename: string): void {
 }
 
 /**
- * Prepare audio for export
+ * Export and download audio with offline rendering
+ * 
+ * This function always renders the audio with both pitch and speed
+ * transformations applied, ensuring the exported file sounds exactly
+ * like the playback.
  * 
  * @param originalFile - Original audio file
- * @param processedBlob - Processed audio blob (if pitch != 0)
  * @param pitch - Pitch shift value
  * @param speed - Playback speed
- * @returns Exportable audio with blob and filename
- */
-export function prepareExport(
-  originalFile: File,
-  processedBlob: Blob | null,
-  pitch: number,
-  speed: number
-): ExportableAudio | null {
-  // If no file, cannot export
-  if (!originalFile) {
-    return null;
-  }
-
-  // Determine which blob to use
-  let blob: Blob;
-  
-  if (pitch !== 0 && processedBlob) {
-    // Use processed audio
-    blob = processedBlob;
-  } else if (pitch === 0) {
-    // Use original file converted to blob
-    // Note: We convert to WAV for consistency
-    blob = originalFile;
-  } else {
-    // Pitch != 0 but no processed blob available yet
-    return null;
-  }
-
-  // Generate filename
-  const filename = generateExportFilename(originalFile.name, pitch, speed);
-
-  return { blob, filename };
-}
-
-/**
- * Export and download audio
- * 
- * @param originalFile - Original audio file
- * @param processedBlob - Processed audio blob (if pitch != 0)
- * @param pitch - Pitch shift value
- * @param speed - Playback speed
+ * @param onProgress - Progress callback for export status
  * @returns True if export was successful, false otherwise
  */
-export function exportAudio(
+export async function exportAudio(
   originalFile: File,
-  processedBlob: Blob | null,
   pitch: number,
-  speed: number
-): boolean {
-  const exportable = prepareExport(originalFile, processedBlob, pitch, speed);
-  
-  if (!exportable) {
+  speed: number,
+  onProgress?: (progress: RenderProgress) => void
+): Promise<boolean> {
+  if (!originalFile) {
     return false;
   }
 
-  downloadAudioBlob(exportable.blob, exportable.filename);
-  return true;
+  try {
+    // Render audio with both pitch and speed applied
+    const result = await renderAudioForExport(
+      originalFile,
+      pitch,
+      speed,
+      onProgress
+    );
+
+    // Generate filename
+    const filename = generateExportFilename(originalFile.name, pitch, speed);
+
+    // Download the rendered file
+    downloadAudioBlob(result.blob, filename);
+
+    return true;
+  } catch (error) {
+    console.error('Export failed:', error);
+    return false;
+  }
 }

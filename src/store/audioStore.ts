@@ -8,6 +8,8 @@ interface AudioState {
   processedAudioBlob: Blob | null;
   isProcessing: boolean;
   processingError: string | null;
+  isExporting: boolean;
+  exportProgress: string;
 
   setAudioFile: (file: File) => void;
   setPitch: (value: number) => void;
@@ -16,6 +18,8 @@ interface AudioState {
   setProcessedAudioBlob: (blob: Blob | null) => void;
   setIsProcessing: (value: boolean) => void;
   setProcessingError: (message: string | null) => void;
+  setIsExporting: (value: boolean) => void;
+  setExportProgress: (message: string) => void;
   reset: () => void;
 }
 
@@ -27,6 +31,8 @@ const initialState = {
   processedAudioBlob: null,
   isProcessing: false,
   processingError: null,
+  isExporting: false,
+  exportProgress: '',
 };
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -38,6 +44,8 @@ export const useAudioStore = create<AudioState>((set) => ({
   processedAudioBlob: null,
   isProcessing: false,
   processingError: null,
+  isExporting: false,
+  exportProgress: '',
 
   // Actions
   setAudioFile: (file: File) => {
@@ -87,6 +95,14 @@ export const useAudioStore = create<AudioState>((set) => ({
 
   setProcessingError: (message: string | null) => {
     set({ processingError: message });
+  },
+
+  setIsExporting: (value: boolean) => {
+    set({ isExporting: value });
+  },
+
+  setExportProgress: (message: string) => {
+    set({ exportProgress: message });
   },
 
   reset: () => {

@@ -87,7 +87,7 @@ function App() {
       </main>
 
       <footer className="app-footer">
-        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 3 - Audio Export</p>
+        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 4 - Accurate Offline Export</p>
       </footer>
     </div>
   );

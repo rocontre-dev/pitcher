@@ -1,31 +1,38 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useAudioStore } from '../../store/audioStore';
 import { exportAudio, generateExportFilename } from '../../services/exportService';
+import type { RenderProgress } from '../../services/offlineRenderService';
 import './ExportPanel.css';
 
 export function ExportPanel() {
   const audioFile = useAudioStore((state) => state.audioFile);
   const pitch = useAudioStore((state) => state.pitch);
   const speed = useAudioStore((state) => state.speed);
-  const processedAudioBlob = useAudioStore((state) => state.processedAudioBlob);
   const isProcessing = useAudioStore((state) => state.isProcessing);
+  const isExporting = useAudioStore((state) => state.isExporting);
+  const exportProgress = useAudioStore((state) => state.exportProgress);
+  const setIsExporting = useAudioStore((state) => state.setIsExporting);
+  const setExportProgress = useAudioStore((state) => state.setExportProgress);
+
+  // Local state for render progress
+  const [renderProgress, setRenderProgress] = useState<RenderProgress | null>(null);
 
   // Determine export status
-  const getExportStatus = useCallback((): { status: 'none' | 'ready' | 'processing' | 'needs-processing'; message: string } => {
+  const getExportStatus = useCallback((): { status: 'none' | 'ready' | 'processing' | 'exporting'; message: string } => {
     if (!audioFile) {
       return { status: 'none', message: 'No audio loaded' };
+    }
+
+    if (isExporting) {
+      return { status: 'exporting', message: exportProgress || 'Exporting...' };
     }
 
     if (isProcessing) {
       return { status: 'processing', message: 'Processing audio...' };
     }
 
-    if (pitch !== 0 && !processedAudioBlob) {
-      return { status: 'needs-processing', message: 'Adjust pitch to enable export' };
-    }
-
     return { status: 'ready', message: 'Export Ready' };
-  }, [audioFile, pitch, processedAudioBlob, isProcessing]);
+  }, [audioFile, isProcessing, isExporting, exportProgress]);
 
   // Generate preview filename
   const getPreviewFilename = useCallback((): string => {
@@ -33,16 +40,35 @@ export function ExportPanel() {
     return generateExportFilename(audioFile.name, pitch, speed);
   }, [audioFile, pitch, speed]);
 
-  // Handle download
-  const handleDownload = useCallback(() => {
+  // Handle download with offline rendering
+  const handleDownload = useCallback(async () => {
     if (!audioFile) return;
 
-    const success = exportAudio(audioFile, processedAudioBlob, pitch, speed);
-    
-    if (!success) {
-      console.error('Export failed: No audio available for export');
+    setIsExporting(true);
+    setRenderProgress(null);
+
+    const onProgress = (progress: RenderProgress) => {
+      setRenderProgress(progress);
+      setExportProgress(progress.message);
+    };
+
+    try {
+      onProgress({ stage: 'decoding', message: 'Preparing export...', progress: 0 });
+
+      const success = await exportAudio(audioFile, pitch, speed, onProgress);
+      
+      if (!success) {
+        console.error('Export failed: No audio available for export');
+        setExportProgress('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      setExportProgress('Export failed');
+    } finally {
+      setIsExporting(false);
+      setRenderProgress(null);
     }
-  }, [audioFile, processedAudioBlob, pitch, speed]);
+  }, [audioFile, pitch, speed, setIsExporting, setExportProgress]);
 
   const exportStatus = getExportStatus();
   const previewFilename = getPreviewFilename();
@@ -72,16 +98,25 @@ export function ExportPanel() {
           </span>
         </div>
 
+        {renderProgress && (
+          <div className="export-progress-bar">
+            <div 
+              className="export-progress-fill" 
+              style={{ width: `${renderProgress.progress}%` }}
+            />
+          </div>
+        )}
+
         <button
           className="btn btn-primary download-btn"
           onClick={handleDownload}
           disabled={isDownloadDisabled}
           aria-label="Download WAV file"
         >
-          {isProcessing ? (
+          {isExporting ? (
             <>
               <span className="btn-spinner" />
-              Processing...
+              {renderProgress?.message || 'Rendering...'}
             </>
           ) : (
             <>
@@ -98,10 +133,10 @@ export function ExportPanel() {
 
       <div className="export-info">
         <p>
-          {exportStatus.status === 'ready' && 'Click to download your modified audio file.'}
+          {exportStatus.status === 'ready' && 'Click to render and download your modified audio file.'}
           {exportStatus.status === 'none' && 'Upload an audio file to get started.'}
-          {exportStatus.status === 'processing' && 'Please wait for processing to complete.'}
-          {exportStatus.status === 'needs-processing' && 'Pitch-shifted audio will be available after processing.'}
+          {exportStatus.status === 'processing' && 'Please wait for pitch processing to complete.'}
+          {exportStatus.status === 'exporting' && 'Rendering audio with pitch and speed applied...'}
         </p>
       </div>
     </div>
