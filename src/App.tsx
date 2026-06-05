@@ -7,6 +7,7 @@ import { WaveformViewer } from './components/WaveformViewer/WaveformViewer';
 import { AudioControls } from './components/AudioControls/AudioControls';
 import { PitchControl } from './components/PitchControl/PitchControl';
 import { SpeedControl } from './components/SpeedControl/SpeedControl';
+import { ExportPanel } from './components/ExportPanel/ExportPanel';
 import './App.css';
 
 function App() {
@@ -77,11 +78,16 @@ function App() {
           <section className="section controls-section">
             <AudioControls wavesurfer={wavesurfer} />
           </section>
+
+          {/* Export Panel */}
+          <section className="section export-section">
+            <ExportPanel />
+          </section>
         </div>
       </main>
 
       <footer className="app-footer">
-        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 2 - Real Pitch Shifting</p>
+        <p>Pitcher &middot; Audio Practice Tool &middot; Phase 3 - Audio Export</p>
       </footer>
     </div>
   );

@@ -11,6 +11,7 @@ import type { ProcessingProgress } from '../services/audioProcessingService';
  * - Processes audio when pitch is non-zero
  * - Skips processing when pitch is 0 (uses original)
  * - Manages loading state and errors
+ * - Stores both blob and URL for playback and export
  * - Cleans up resources on unmount
  */
 
@@ -20,6 +21,7 @@ export function usePitchProcessor() {
   const audioFile = useAudioStore((state) => state.audioFile);
   const pitch = useAudioStore((state) => state.pitch);
   const setProcessedAudioUrl = useAudioStore((state) => state.setProcessedAudioUrl);
+  const setProcessedAudioBlob = useAudioStore((state) => state.setProcessedAudioBlob);
   const setIsProcessing = useAudioStore((state) => state.setIsProcessing);
   const setProcessingError = useAudioStore((state) => state.setProcessingError);
 
@@ -41,6 +43,7 @@ export function usePitchProcessor() {
     // If no file, clear processed audio
     if (!audioFile) {
       setProcessedAudioUrl(null);
+      setProcessedAudioBlob(null);
       setIsProcessing(false);
       setProcessingError(null);
       return;
@@ -49,6 +52,7 @@ export function usePitchProcessor() {
     // If pitch is 0, use original audio (no processing needed)
     if (pitch === 0) {
       setProcessedAudioUrl(null);
+      setProcessedAudioBlob(null);
       setIsProcessing(false);
       setProcessingError(null);
       return;
@@ -74,6 +78,7 @@ export function usePitchProcessor() {
         );
 
         setProcessedAudioUrl(result.blobUrl);
+        setProcessedAudioBlob(result.blob);
         setIsProcessing(false);
         console.log('Audio processing complete:', result);
       } catch (error) {
@@ -96,6 +101,7 @@ export function usePitchProcessor() {
     audioFile,
     pitch,
     setProcessedAudioUrl,
+    setProcessedAudioBlob,
     setIsProcessing,
     setProcessingError,
     handleProgress

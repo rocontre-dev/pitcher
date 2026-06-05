@@ -11,6 +11,7 @@ import { SoundTouch } from 'soundtouchjs';
  */
 
 export interface ProcessedAudioResult {
+  blob: Blob;
   blobUrl: string;
   duration: number;
 }
@@ -234,8 +235,10 @@ export class AudioProcessingService {
       // No pitch shift needed, return original as WAV
       onProgress?.({ progress: 100, message: 'No pitch shift needed' });
       const blob = this.audioBufferToWav(audioBuffer);
+      const blobUrl = URL.createObjectURL(blob);
       return {
-        blobUrl: URL.createObjectURL(blob),
+        blob,
+        blobUrl,
         duration: originalDuration
       };
     }
@@ -252,8 +255,10 @@ export class AudioProcessingService {
 
     onProgress?.({ progress: 100, message: 'Processing complete' });
 
+    const blobUrl = URL.createObjectURL(blob);
     return {
-      blobUrl: URL.createObjectURL(blob),
+      blob,
+      blobUrl,
       duration: processedBuffer.duration
     };
   }

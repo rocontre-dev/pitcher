@@ -5,6 +5,7 @@ interface AudioState {
   pitch: number;
   speed: number;
   processedAudioUrl: string | null;
+  processedAudioBlob: Blob | null;
   isProcessing: boolean;
   processingError: string | null;
 
@@ -12,6 +13,7 @@ interface AudioState {
   setPitch: (value: number) => void;
   setSpeed: (value: number) => void;
   setProcessedAudioUrl: (url: string | null) => void;
+  setProcessedAudioBlob: (blob: Blob | null) => void;
   setIsProcessing: (value: boolean) => void;
   setProcessingError: (message: string | null) => void;
   reset: () => void;
@@ -22,6 +24,7 @@ const initialState = {
   pitch: 0,
   speed: 1,
   processedAudioUrl: null,
+  processedAudioBlob: null,
   isProcessing: false,
   processingError: null,
 };
@@ -32,6 +35,7 @@ export const useAudioStore = create<AudioState>((set) => ({
   pitch: 0,
   speed: 1,
   processedAudioUrl: null,
+  processedAudioBlob: null,
   isProcessing: false,
   processingError: null,
 
@@ -45,6 +49,7 @@ export const useAudioStore = create<AudioState>((set) => ({
     set({
       audioFile: file,
       processedAudioUrl: null,
+      processedAudioBlob: null,
       pitch: 0,
       speed: 1,
       processingError: null,
@@ -70,6 +75,10 @@ export const useAudioStore = create<AudioState>((set) => ({
       URL.revokeObjectURL(state.processedAudioUrl);
     }
     set({ processedAudioUrl: url });
+  },
+
+  setProcessedAudioBlob: (blob: Blob | null) => {
+    set({ processedAudioBlob: blob });
   },
 
   setIsProcessing: (value: boolean) => {
