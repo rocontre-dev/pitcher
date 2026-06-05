@@ -122,23 +122,6 @@
   transform: translateX(-50%);
 }
 
-.pitch-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  background-color: rgba(108, 99, 255, 0.05);
-  border-radius: var(--radius-sm);
-}
-
-.pitch-note svg {
-  flex-shrink: 0;
-}
-
 /* Responsive */
 @media (max-width: 600px) {
   .pitch-slider-container {
