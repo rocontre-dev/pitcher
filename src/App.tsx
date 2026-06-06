@@ -1,10 +1,8 @@
-import { useState, useCallback } from 'react';
-import WaveSurfer from 'wavesurfer.js';
 import { usePitchProcessor } from './hooks/usePitchProcessor';
 import { useBpmDetector } from './hooks/useBpmDetector';
 import { useAudioStore } from './store/audioStore';
 import { AudioUploader } from './components/AudioUploader/AudioUploader';
-import { WaveformViewer } from './components/WaveformViewer/WaveformViewer';
+import { TimelinePlayer } from './components/TimelinePlayer/TimelinePlayer';
 import { AudioAnalysisPanel } from './components/AudioAnalysisPanel/AudioAnalysisPanel';
 import { AudioControls } from './components/AudioControls/AudioControls';
 import { PitchControl } from './components/PitchControl/PitchControl';
@@ -12,8 +10,10 @@ import { SpeedControl } from './components/SpeedControl/SpeedControl';
 import { ExportPanel } from './components/ExportPanel/ExportPanel';
 import './App.css';
 
+// Import dev test tool (exposes window.testPitchShift)
+import './dev/audioEngineTest';
+
 function App() {
-  const [wavesurfer, setWavesurfer] = useState<WaveSurfer | null>(null);
   const processingError = useAudioStore((state) => state.processingError);
 
   // Initialize pitch processor hook
@@ -21,10 +21,6 @@ function App() {
   
   // Initialize BPM detector hook
   useBpmDetector();
-
-  const handleWaveSurferReady = useCallback((ws: WaveSurfer) => {
-    setWavesurfer(ws);
-  }, []);
 
   return (
     <div className="app">
@@ -61,9 +57,9 @@ function App() {
             <AudioUploader />
           </section>
 
-          {/* Waveform Viewer */}
-          <section className="section waveform-section">
-            <WaveformViewer onWaveSurferReady={handleWaveSurferReady} />
+          {/* Timeline Player */}
+          <section className="section timeline-section">
+            <TimelinePlayer />
           </section>
 
           {/* Audio Analysis Panel */}
@@ -80,13 +76,13 @@ function App() {
 
             {/* Speed Control */}
             <section className="section speed-section">
-              <SpeedControl wavesurfer={wavesurfer} />
+              <SpeedControl />
             </section>
           </div>
 
           {/* Audio Controls */}
           <section className="section controls-section">
-            <AudioControls wavesurfer={wavesurfer} />
+            <AudioControls />
           </section>
 
           {/* Export Panel */}

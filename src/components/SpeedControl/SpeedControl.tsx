@@ -1,13 +1,8 @@
-import { useCallback, useEffect } from 'react';
-import WaveSurfer from 'wavesurfer.js';
+import { useCallback } from 'react';
 import { useAudioStore } from '../../store/audioStore';
 import './SpeedControl.css';
 
-interface SpeedControlProps {
-  wavesurfer: WaveSurfer | null;
-}
-
-export function SpeedControl({ wavesurfer }: SpeedControlProps) {
+export function SpeedControl() {
   const speed = useAudioStore((state) => state.speed);
   const setSpeed = useAudioStore((state) => state.setSpeed);
 
@@ -15,13 +10,6 @@ export function SpeedControl({ wavesurfer }: SpeedControlProps) {
     const value = parseFloat(e.target.value);
     setSpeed(value);
   }, [setSpeed]);
-
-  // Update WaveSurfer playback rate when speed changes
-  useEffect(() => {
-    if (wavesurfer) {
-      wavesurfer.setPlaybackRate(speed);
-    }
-  }, [speed, wavesurfer]);
 
   const formatSpeed = (value: number): string => {
     return value.toFixed(2) + 'x';

@@ -14,6 +14,10 @@ interface AudioState {
   isDetectingBpm: boolean;
   bpmError: string | null;
   key: string | null;
+  // Timeline player state
+  currentTime: number;
+  duration: number;
+  isPlaying: boolean;
 
   setAudioFile: (file: File) => void;
   setPitch: (value: number) => void;
@@ -28,6 +32,9 @@ interface AudioState {
   setIsDetectingBpm: (value: boolean) => void;
   setBpmError: (message: string | null) => void;
   setKey: (value: string | null) => void;
+  setCurrentTime: (time: number) => void;
+  setDuration: (duration: number) => void;
+  setIsPlaying: (playing: boolean) => void;
   reset: () => void;
 }
 
@@ -45,6 +52,9 @@ const initialState = {
   isDetectingBpm: false,
   bpmError: null,
   key: null,
+  currentTime: 0,
+  duration: 0,
+  isPlaying: false,
 };
 
 export const useAudioStore = create<AudioState>((set) => ({
@@ -62,6 +72,9 @@ export const useAudioStore = create<AudioState>((set) => ({
   isDetectingBpm: false,
   bpmError: null,
   key: null,
+  currentTime: 0,
+  duration: 0,
+  isPlaying: false,
 
   // Actions
   setAudioFile: (file: File) => {
@@ -139,6 +152,18 @@ export const useAudioStore = create<AudioState>((set) => ({
 
   setKey: (value: string | null) => {
     set({ key: value });
+  },
+
+  setCurrentTime: (time: number) => {
+    set({ currentTime: time });
+  },
+
+  setDuration: (duration: number) => {
+    set({ duration });
+  },
+
+  setIsPlaying: (playing: boolean) => {
+    set({ isPlaying: playing });
   },
 
   reset: () => {

@@ -1,62 +1,31 @@
-import { useCallback, useEffect, useState } from 'react';
-import WaveSurfer from 'wavesurfer.js';
+import { useCallback } from 'react';
 import { useAudioStore } from '../../store/audioStore';
 import './AudioControls.css';
 
-interface AudioControlsProps {
-  wavesurfer: WaveSurfer | null;
-}
-
-type PlaybackState = 'stopped' | 'playing' | 'paused';
-
-export function AudioControls({ wavesurfer }: AudioControlsProps) {
-  const [playbackState, setPlaybackState] = useState<PlaybackState>('stopped');
+export function AudioControls() {
   const isProcessing = useAudioStore((state) => state.isProcessing);
+  const isPlaying = useAudioStore((state) => state.isPlaying);
+  const setIsPlaying = useAudioStore((state) => state.setIsPlaying);
+  const setCurrentTime = useAudioStore((state) => state.setCurrentTime);
+  const audioFile = useAudioStore((state) => state.audioFile);
 
   const handlePlay = useCallback(() => {
-    if (wavesurfer) {
-      wavesurfer.play();
+    if (audioFile) {
+      setIsPlaying(true);
     }
-  }, [wavesurfer]);
+  }, [audioFile, setIsPlaying]);
 
   const handlePause = useCallback(() => {
-    if (wavesurfer) {
-      wavesurfer.pause();
-    }
-  }, [wavesurfer]);
+    setIsPlaying(false);
+  }, [setIsPlaying]);
 
   const handleStop = useCallback(() => {
-    if (wavesurfer) {
-      wavesurfer.stop();
-    }
-  }, [wavesurfer]);
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, [setIsPlaying, setCurrentTime]);
 
-  // Listen to wavesurfer events
-  useEffect(() => {
-    if (!wavesurfer) return;
-
-    const handlePlay = () => setPlaybackState('playing');
-    const handlePause = () => setPlaybackState('paused');
-    const handleFinish = () => setPlaybackState('stopped');
-
-    wavesurfer.on('play', handlePlay);
-    wavesurfer.on('pause', handlePause);
-    wavesurfer.on('finish', handleFinish);
-
-    return () => {
-      wavesurfer.un('play', handlePlay);
-      wavesurfer.un('pause', handlePause);
-      wavesurfer.un('finish', handleFinish);
-    };
-  }, [wavesurfer]);
-
-  // Reset state when wavesurfer changes
-  useEffect(() => {
-    setPlaybackState('stopped');
-  }, [wavesurfer]);
-
-  const isPlaying = playbackState === 'playing';
-  const isStopped = playbackState === 'stopped';
+  const isCurrentlyPlaying = isPlaying;
+  const isStopped = !isPlaying;
 
   return (
     <div className="audio-controls">
@@ -68,7 +37,7 @@ export function AudioControls({ wavesurfer }: AudioControlsProps) {
         <button
           className="btn btn-icon control-btn"
           onClick={handlePlay}
-          disabled={!wavesurfer || isPlaying || isProcessing}
+          disabled={!audioFile || isCurrentlyPlaying || isProcessing}
           aria-label="Play"
           title={isProcessing ? 'Processing audio...' : 'Play'}
         >
@@ -80,7 +49,7 @@ export function AudioControls({ wavesurfer }: AudioControlsProps) {
         <button
           className="btn btn-icon control-btn"
           onClick={handlePause}
-          disabled={!wavesurfer || !isPlaying}
+          disabled={!audioFile || !isCurrentlyPlaying}
           aria-label="Pause"
           title="Pause"
         >
@@ -93,7 +62,7 @@ export function AudioControls({ wavesurfer }: AudioControlsProps) {
         <button
           className="btn btn-icon control-btn"
           onClick={handleStop}
-          disabled={!wavesurfer || isStopped}
+          disabled={!audioFile || isStopped}
           aria-label="Stop"
           title="Stop"
         >

@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { useAudioStore } from '../../store/audioStore';
+import { MESSAGES } from '../../constants/audio';
 import './PitchControl.css';
 
 export function PitchControl() {
@@ -60,6 +61,13 @@ export function PitchControl() {
       <div className="pitch-markers">
         <span className="marker center">0</span>
       </div>
+
+      {pitch !== 0 && (
+        <div className="pitch-notice">
+          <span className="pitch-notice-title">{MESSAGES.PITCH_ACTIVE}</span>
+          <span className="pitch-notice-text">{MESSAGES.PITCH_NOTE}</span>
+        </div>
+      )}
     </div>
   );
 }

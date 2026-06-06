@@ -122,6 +122,30 @@
   transform: translateX(-50%);
 }
 
+/* Pitch Active Notice */
+.pitch-notice {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: rgba(108, 99, 255, 0.1);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pitch-notice-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.pitch-notice-text {
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .pitch-slider-container {
